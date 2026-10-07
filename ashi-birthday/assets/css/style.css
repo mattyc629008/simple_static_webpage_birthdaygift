@@ -1,0 +1,145 @@
+/* =========================================================
+   Birthday Book — style.css  (Coquette theme)
+   ✏️ Palette, fonts and book size all live in :root.
+   ========================================================= */
+:root{
+  --blush:#fdeef1; --pink:#f8d3dc; --rose:#e79aab; --gold:#b76e79; --cream:#fff9f2; --ink:#7b4b56;
+  --satin:linear-gradient(135deg,#fbd0da,#ee9fb3 55%,#f8c3cf);
+  --rosegold:linear-gradient(135deg,#f6d5cf,#b76e79 50%,#f6d5cf);
+  --bw:min(92vw,700px); --bh:min(70vh,560px);
+  --script:'Dancing Script',cursive; --serif:'Playfair Display',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--serif);color:var(--ink);overflow:hidden;
+  background:radial-gradient(circle at 12% 8%,#ffe3ea,transparent 45%),radial-gradient(circle at 88% 92%,#ffd6e0,transparent 45%),var(--blush)}
+body::before{content:"";position:fixed;inset:0;opacity:.55;pointer-events:none;background:radial-gradient(#fff 2px,transparent 2.6px) 0 0/24px 24px} /* tiny pearls */
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.script{font-family:var(--script);font-weight:700;color:var(--gold)}
+h2.script{font-size:clamp(2.1rem,6.5vw,3rem);margin-bottom:10px}
+.stage{position:fixed;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;perspective:1600px}
+#hearts{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.heart{position:absolute;bottom:-40px;opacity:.65;animation:floatUp linear infinite}
+
+/* ---------- Landing: the wrapped, closed book ---------- */
+#landing{z-index:3}
+.cover{position:relative;width:var(--bw);height:var(--bh);border-radius:18px;overflow:hidden;transform-origin:left center;backface-visibility:hidden;
+  background:radial-gradient(circle at 25% 15%,#fff0f4,transparent 55%),var(--satin);border:3px solid var(--gold);
+  box-shadow:0 24px 50px rgba(183,110,121,.4);transition:transform 1.5s cubic-bezier(.6,0,.2,1) .9s}
+.cover::before{content:"";position:absolute;inset:12px;border:2px dotted #fff;border-radius:12px} /* lace stitching */
+.ribbon{position:absolute;box-shadow:inset 0 0 0 3px rgba(255,255,255,.45);transition:transform 1s ease .35s}
+.ribbon-h{left:0;right:0;top:calc(50% - 24px);height:48px;transform-origin:right;background:linear-gradient(180deg,#f6aebf,#fddde4 50%,#f6aebf)}
+.ribbon-v{top:0;bottom:0;left:calc(50% - 24px);width:48px;transform-origin:bottom;background:linear-gradient(90deg,#f6aebf,#fddde4 50%,#f6aebf)}
+.bow{position:absolute;left:50%;top:50%;width:clamp(150px,36vw,240px);translate:-50% -50%;animation:sway 3s ease-in-out infinite}
+.bow svg{display:block;width:100%;overflow:visible;filter:drop-shadow(0 6px 8px rgba(183,110,121,.5))}
+.bow svg *{transform-box:fill-box;transition:transform .9s ease,opacity .9s ease}
+.sat{fill:url(#satin);stroke:#d9809a;stroke-width:2}
+.hl{fill:none;stroke:#fff;stroke-opacity:.65;stroke-width:3;stroke-linecap:round}
+.pearl{fill:#fff;stroke:#f1b5c4;stroke-width:2}
+.loop-l{transform-origin:100% 50%} .loop-r{transform-origin:0 50%} .tail{transform-origin:50% 0}
+.prompt{font-size:clamp(1.6rem,5vw,2.3rem);animation:pulse 2s ease-in-out infinite;transition:opacity .5s}
+/* untie sequence: bow loosens → ribbons unspool → cover swings open */
+#landing.untied .loop-l{transform:translateX(-20px) scaleX(.05) rotate(-20deg);opacity:0}
+#landing.untied .loop-r{transform:translateX(20px) scaleX(.05) rotate(20deg);opacity:0}
+#landing.untied .tail-l{transform:rotate(25deg) translateY(170px);opacity:0}
+#landing.untied .tail-r{transform:rotate(-25deg) translateY(170px);opacity:0}
+#landing.untied .knot{transform:scale(0) rotate(180deg);opacity:0;transition-delay:.45s}
+#landing.untied .bow{animation:none;pointer-events:none}
+#landing.untied .ribbon-h{transform:scaleX(0)}
+#landing.untied .ribbon-v{transform:scaleY(0)}
+#landing.untied .cover{transform:rotateY(-118deg)}
+#landing.untied .prompt{opacity:0;animation:none}
+
+/* ---------- The book ---------- */
+.book{opacity:0;visibility:hidden;transition:opacity 1.1s}
+.book.show{opacity:1;visibility:visible}
+.pages{position:relative;width:var(--bw);height:var(--bh);perspective:1600px}
+.page{position:absolute;inset:0;border-radius:18px;transform-origin:left center;
+  background:repeating-linear-gradient(transparent 0 31px,rgba(183,110,121,.13) 31px 32px),var(--cream); /* ruled vintage paper */
+  border:2px solid var(--gold);
+  box-shadow:0 20px 44px rgba(183,110,121,.3),inset 0 0 70px rgba(231,154,171,.28),inset 16px 0 18px -12px rgba(120,60,70,.28);
+  opacity:0;pointer-events:none;transform:translateX(44px) rotateY(-9deg);
+  transition:opacity .7s,transform .8s cubic-bezier(.4,.1,.2,1)}
+.page::before{content:"";position:absolute;inset:9px;border:2px dotted var(--rose);border-radius:12px;pointer-events:none} /* lace stitching */
+.page.before{transform:translateX(-44px) rotateY(9deg)}
+.page.active{opacity:1;pointer-events:auto;transform:none}
+.inner{position:relative;height:100%;overflow:auto;padding:38px clamp(24px,6vw,60px);text-align:center}
+.page.active .inner>*{animation:rise .8s calc(var(--n,0)*.14s) both}
+
+/* Letter */
+.letter{text-align:left}
+.letter h2{text-align:center}
+.letter p{line-height:2;font-size:clamp(.95rem,2.7vw,1.08rem);margin-bottom:.9em}
+.letter .to{font-style:italic;font-size:1.2rem}
+.letter .sign{text-align:right}
+.letter .sign .script{font-size:2rem}
+
+/* Song: vinyl player */
+.deck{position:relative;width:min(230px,52vw);aspect-ratio:1;margin:18px auto 14px}
+.vinyl{position:absolute;inset:0;border-radius:50%;display:grid;place-items:center;
+  background:repeating-radial-gradient(#1d1418 0 2px,#392630 3px 4px);
+  box-shadow:0 10px 24px rgba(0,0,0,.35),0 0 0 8px var(--pink),0 0 0 11px var(--gold);animation:spin 5s linear infinite paused}
+.vinyl::before{content:"";position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(rgba(255,255,255,.2),transparent 25%,rgba(255,255,255,.2) 50%,transparent 75%,rgba(255,255,255,.2))}
+.vinyl b{position:relative;width:36%;aspect-ratio:1;border-radius:50%;background:var(--satin);display:grid;place-items:center;font-size:1.5rem;box-shadow:inset 0 0 0 4px rgba(255,255,255,.6)}
+.arm{position:absolute;top:2%;right:-16%;width:58%;height:9px;border-radius:9px;background:var(--rosegold);
+  transform-origin:right center;transform:rotate(16deg);transition:transform .9s;box-shadow:0 3px 6px rgba(0,0,0,.25)}
+.arm::before{content:"";position:absolute;left:-4px;top:-4px;width:18px;height:17px;border-radius:5px;background:var(--gold)}
+.arm::after{content:"";position:absolute;right:-8px;top:-8px;width:25px;height:25px;border-radius:50%;background:#fff;border:3px solid var(--gold)}
+.song.playing .vinyl{animation-play-state:running}
+.song.playing .arm{transform:rotate(-14deg)}
+.track{font-style:italic;font-size:1.15rem}
+.track small{opacity:.7;font-size:.9em}
+.controls{display:flex;align-items:center;gap:12px;max-width:400px;margin:16px auto 0}
+.round{flex:none;width:52px;height:52px;border-radius:50%;background:var(--satin);color:#fff;font-size:1.1rem;box-shadow:0 4px 0 #d9809a}
+.bar{flex:1;height:10px;border-radius:10px;background:#f6d6dd;cursor:pointer;overflow:hidden}
+.fill{height:100%;width:0;background:var(--rosegold)}
+#time{font-size:.85rem;min-width:5.5em;text-align:right}
+.note{margin-top:12px;font-size:.9rem;color:var(--gold)}
+
+/* Gift */
+.hint{font-size:clamp(1.6rem,5vw,2.2rem);min-height:48px;margin-bottom:6px}
+.hint .aft,.opened .hint .b4{display:none}
+.opened .hint .aft{display:inline}
+.reveal{display:grid;place-items:center;height:calc(var(--bh) - 160px)}
+.reveal>*{grid-area:1/1}
+.gift{position:relative;width:170px;height:150px;cursor:pointer;animation:wiggle 2.6s ease-in-out infinite;transition:opacity .8s .9s,transform .8s .9s}
+.gift .base,.gift .lid{position:absolute;background:var(--satin);border-radius:8px;box-shadow:inset 0 0 0 3px rgba(255,255,255,.4),0 8px 16px rgba(183,110,121,.35)}
+.gift .base{bottom:0;left:0;width:100%;height:98px}
+.gift .lid{top:0;left:-9px;width:calc(100% + 18px);height:58px;z-index:2;transform-origin:left bottom;
+  transition:transform 1s cubic-bezier(.3,1.6,.5,1),opacity .9s .3s}
+.gift .base::after,.gift .lid::after{content:"";position:absolute;top:0;bottom:0;left:calc(50% - 15px);width:30px;background:linear-gradient(90deg,#fff6,#fffc,#fff6)}
+.gift .lid span{position:absolute;left:50%;top:-38px;translate:-50% 0;font-size:3.2rem;z-index:3;filter:drop-shadow(0 4px 4px rgba(183,110,121,.4))}
+.opened .gift{animation:none;opacity:0;transform:translateY(70px) scale(.7);pointer-events:none}
+.opened .gift .lid{transform:translate(-40px,-160px) rotate(-40deg);opacity:0}
+.frame{position:relative;opacity:0;transform:scale(.2) translateY(60px);pointer-events:none;padding:12px 12px 6px;background:#fff;
+  border:10px solid transparent;border-image:var(--rosegold) 1;outline:3px dotted var(--rose);outline-offset:7px;
+  box-shadow:0 14px 30px rgba(183,110,121,.35);text-align:center;transition:opacity .6s .5s,transform 1.3s cubic-bezier(.3,1.5,.5,1) .5s}
+.opened .frame{opacity:1;transform:none;pointer-events:auto}
+.frame::before{content:"🎀";position:absolute;top:-34px;left:-26px;font-size:2.2rem;rotate:-18deg}
+.frame img{display:block;max-width:min(100%,340px);max-height:calc(var(--bh) - 280px);margin:auto}
+.frame figcaption{font-size:1.4rem;padding:6px 0}
+.frame.missing img{display:none}
+.frame.missing::after{content:"Add your drawing at assets/images/drawing.png";display:block;max-width:240px;padding:36px 20px}
+
+/* Navigation */
+.nav{display:flex;align-items:center;justify-content:space-between;width:var(--bw)}
+.nav button{padding:6px 22px 8px;border-radius:30px;background:var(--satin);color:#fff;font:700 1.5rem var(--script);
+  box-shadow:0 4px 0 #d9809a,0 10px 18px rgba(183,110,121,.3);transition:transform .2s}
+.nav button:hover:not(:disabled){transform:translateY(-2px)}
+.nav button:disabled{opacity:.35;cursor:default}
+.dots{display:flex;gap:9px}
+.dots i{width:11px;height:11px;border-radius:50%;background:#fff;border:2px solid var(--rose);transition:.3s}
+.dots i.on{background:var(--rose);transform:scale(1.35)}
+
+/* Sparkles / confetti (created by main.js) */
+.spark{position:fixed;z-index:50;pointer-events:none;animation:burst 1.8s ease-out forwards}
+
+@keyframes sway{50%{transform:rotate(3deg) scale(1.03)}}
+@keyframes pulse{50%{transform:scale(1.05)}}
+@keyframes wiggle{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg) translateY(-4px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+@keyframes floatUp{to{transform:translateY(-115vh) rotate(40deg)}}
+@keyframes burst{from{opacity:1;transform:translate(0,0) scale(.4)}to{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--r)) scale(1)}}
